@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>র‍্যান্ডম নম্বর শাফলার</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a40;
+      --accent: #f0c040;
+      --accent2: #e05c5c;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Hind Siliguri', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px 60px;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,192,64,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,192,64,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      border: 1px solid rgba(240,192,64,0.3);
+      padding: 4px 14px;
+      border-radius: 2px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    /* Input card */
+    .input-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 26px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      color: var(--text);
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(240,192,64,0.12);
+    }
+
+    .arrow-sep {
+      font-size: 22px;
+      color: var(--muted);
+      padding-bottom: 14px;
+      text-align: center;
+    }
+
+    .btn-shuffle {
+      width: 100%;
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 17px;
+      font-family: 'Hind Siliguri', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-shuffle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(240,192,64,0.3);
+    }
+
+    .btn-shuffle:active {
+      transform: translateY(0);
+    }
+
+    .btn-shuffle .icon {
+      font-size: 20px;
+      display: inline-block;
+      transition: transform 0.4s;
+    }
+
+    .btn-shuffle:hover .icon {
+      transform: rotate(180deg);
+    }
+
+    /* Error */
+    .error-msg {
+      color: var(--accent2);
+      font-size: 13px;
+      margin-top: 10px;
+      min-height: 18px;
+      text-align: center;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-chip strong {
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    /* Results */
+    .results-section {
+      display: none;
+    }
+
+    .results-section.visible {
+      display: block;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .results-title {
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-copy:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .numbers-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .num-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 52px;
+      text-align: center;
+      position: relative;
+      transition: transform 0.3s ease, background 0.3s;
+    }
+
+    .num-chip .serial {
+      display: block;
+      font-size: 9px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-bottom: 2px;
+      letter-spacing: 1px;
+    }
+
+    .num-chip.highlight {
+      background: rgba(240,192,64,0.12);
+      border-color: rgba(240,192,64,0.4);
+      color: var(--accent);
+    }
+
+    /* animated entrance */
+    .num-chip {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+
+    .num-chip.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    @media (max-width: 480px) {
+      .input-row { grid-template-columns: 1fr auto 1fr; gap: 8px; }
+      .input-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="tag">RANDOM SHUFFLER</div>
+    <h1>নম্বর <span>র‍্যান্ডমাইজার</span></h1>
+    <p class="subtitle">দুটি সংখ্যা দিন — মাঝের সব নম্বর এলোমেলো সাজিয়ে দেবে</p>
+  </header>
+
+  <div class="input-card">
+    <div class="input-row">
+      <div class="input-group">
+        <label>শুরু</label>
+        <input type="number" id="startNum" placeholder="১" value=""/>
+      </div>
+      <div class="arrow-sep">→</div>
+      <div class="input-group">
+        <label>শেষ</label>
+        <input type="number" id="endNum" placeholder="২০" value=""/>
+      </div>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="btn-shuffle" onclick="shuffle()">
+      <span class="icon">⟳</span> শাফল করুন
+    </button>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="stats-bar" id="statsBar"></div>
+    <div class="results-header">
+      <span class="results-title">ফলাফল</span>
+      <button class="btn-copy" onclick="copyAll()">কপি করুন</button>
+    </div>
+    <div class="numbers-grid" id="numbersGrid"></div>
+  </div>
+</div>
+
+<script>
+  function shuffle() {
+    const startVal = document.getElementById('startNum').value.trim();
+    const endVal   = document.getElementById('endNum').value.trim();
+    const errEl    = document.getElementById('errorMsg');
+    errEl.textContent = '';
+
+    if (startVal === '' || endVal === '') {
+      errEl.textContent = '⚠ দুটি সংখ্যাই দিতে হবে।';
+      return;
+    }
+
+    let a = parseInt(startVal), b = parseInt(endVal);
+
+    if (isNaN(a) || isNaN(b)) {
+      errEl.textContent = '⚠ সঠিক সংখ্যা দিন।';
+      return;
+    }
+
+    if (a > b) [a, b] = [b, a]; // swap if reversed
+
+    const count = b - a + 1;
+    if (count > 2000) {
+      errEl.textContent = '⚠ সর্বোচ্চ ২০০০টি নম্বর সাপোর্ট করে।';
+      return;
+    }
+
+    // Build array
+    let nums = [];
+    for (let i = a; i <= b; i++) nums.push(i);
+
+    // Fisher-Yates shuffle
+    for (let i = nums.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [nums[i], nums[j]] = [nums[j], nums[i]];
+    }
+
+    // Stats
+    const statsBar = document.getElementById('statsBar');
+    statsBar.innerHTML = `
+      <div class="stat-chip">মোট নম্বর: <strong>${count}</strong></div>
+      <div class="stat-chip">রেঞ্জ: <strong>${a} – ${b}</strong></div>
+      <div class="stat-chip">১ম: <strong>${nums[0]}</strong></div>
+      <div class="stat-chip">শেষ: <strong>${nums[nums.length-1]}</strong></div>
+    `;
+
+    // Render grid
+    const grid = document.getElementById('numbersGrid');
+    grid.innerHTML = '';
+
+    nums.forEach((n, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'num-chip';
+      chip.innerHTML = `<span class="serial">#${idx+1}</span>${n}`;
+      if (n === a || n === b) chip.classList.add('highlight');
+      grid.appendChild(chip);
+
+      // staggered animation
+      const delay = Math.min(idx * 18, 800);
+      setTimeout(() => chip.classList.add('show'), delay);
+    });
+
+    // Show section
+    const section = document.getElementById('resultsSection');
+    section.classList.remove('visible');
+    void section.offsetWidth; // reflow
+    section.classList.add('visible');
+  }
+
+  function copyAll() {
+    const chips = document.querySelectorAll('.num-chip');
+    const nums = Array.from(chips).map(c => c.textContent.replace(/^#\d+/, '').trim());
+    navigator.clipboard.writeText(nums.join(', ')).then(() => {
+      const btn = document.querySelector('.btn-copy');
+      btn.textContent = '✓ কপি হয়েছে!';
+      setTimeout(() => btn.textContent = 'কপি করুন', 1800);
+    });
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') shuffle();
+  });
+</script>
+</body>
+</html>
